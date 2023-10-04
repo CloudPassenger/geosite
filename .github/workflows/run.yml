@@ -172,8 +172,8 @@ jobs:
       
       - name: Generate microsoft-cn
         run: |
-          curl -sSL ${MICROSOFT_CN} | grep -Ev '#|payload:' | sed 's/^- "+.//g' | sed 's/^- "/full:/g' | sed 's/"$//g' | sed '/^\s*$/d' > microsoft-cn
-          cp -f microsoft-cn ./community/data/microsoft-cn
+          curl -sSL ${MICROSOFT_CN} | grep -Ev '#|payload:' | sed 's/^- "+.//g' | sed 's/^- "/full:/g' | sed 's/"$//g' | sed '/^\s*$/d' > microsoft-cn.txt
+          cp -f microsoft-cn.txt ./community/data/microsoft-cn
 
       - name: Generate games-cn
         run: |
