@@ -168,7 +168,7 @@ jobs:
           full:yacd.metacubex.one
           full:d.metacubex.one
           EOF
-          sort --ignore-case -u ./tmp/temp-private.txt >> ./community/data/private
+          sort --ignore-case -u temp-private-patch.txt >> ./community/data/private
       
       - name: Generate microsoft-cn
         run: |
