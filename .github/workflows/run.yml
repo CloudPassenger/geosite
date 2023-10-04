@@ -204,8 +204,8 @@ jobs:
           NO_SKIP: true
         run: |
           go install -trimpath -ldflags="-s -w -buildid=" github.com/metacubex/geo/cmd/geo@master
-          geo convert site -i v2ray -o sing -f ./custom/publish/geosite.dat ./custom/publish/geosite.db
-          geo convert site -i v2ray -o meta -f ./custom/publish/geosite.dat ./custom/publish/geosite.metadb
+          geo convert site -i v2ray -o sing -f ./custom/publish/geosite.db ./custom/publish/geosite.dat
+          geo convert site -i v2ray -o meta -f ./custom/publish/geosite.metadb ./custom/publish/geosite.dat
 
       - name: Move and zip files and generate sha256 hash
         run: |
