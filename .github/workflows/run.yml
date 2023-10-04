@@ -60,8 +60,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: ./custom/go.mod
-          cache-dependency-path: ./custom/go.sum
+          go-version: '1.20'
 
       - name: Generate GFWList domains
         run: |
@@ -199,15 +198,27 @@ jobs:
         run: |
           cd custom || exit 1
           go run ./ --datapath=../community/data
+      
+      - name: Build Sing-box and Clash.Meta Database
+        env:
+          NO_SKIP: true
+        run: |
+          go install -trimpath -ldflags="-s -w -buildid=" github.com/metacubex/geo/cmd/geo@master
+          geo convert site -i v2ray -o sing -f ./custom/publish/geosite.dat ./custom/publish/geosite.db
+          geo convert site -i v2ray -o meta -f ./custom/publish/geosite.dat ./custom/publish/geosite.metadb
 
       - name: Move and zip files and generate sha256 hash
         run: |
           install -Dp ./custom/publish/geosite.dat ./publish/geosite.dat
+          install -Dp ./custom/publish/geosite.db ./publish/geosite.db
+          install -Dp ./custom/publish/geosite.metadb ./publish/geosite.metadb
           install -p {proxy,direct,reject}-tld-list.txt ./publish/
           install -p {proxy,direct,reject}-list.txt ./publish/
           install -p {apple-cn,google-cn,microsoft-cn,gfw,greatfire,win-spy,win-update,win-extra}.txt ./publish/
           cd ./publish || exit 1
           sha256sum geosite.dat > geosite.dat.sha256sum
+          sha256sum geosite.db > geosite.db.sha256sum
+          sha256sum geosite.metadb > geosite.metadb.sha256sum
 
       - name: Release and upload assets
         uses: svenstaro/upload-release-action@v2
