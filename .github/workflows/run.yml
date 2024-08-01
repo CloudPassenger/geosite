@@ -58,7 +58,7 @@ jobs:
           path: gfwlist2dnsmasq
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -124,11 +124,11 @@ jobs:
           diff ./proxy-need-to-remove.txt ./proxy-list-without-redundant | awk '/^>/{print $2}' > temp-geolocation-\!cn.txt
           diff ./reject-need-to-remove.txt ./reject-list-without-redundant | awk '/^>/{print $2}' > temp-category-ads-all.txt
 
-      - name: Remove domains end with ".cn" in "temp-geolocation-!cn.txt" and write lists to data directory
+      - name: Write lists to data directory
         run: |
           cat temp-cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/cn
           cat temp-cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-tld-list.txt
-          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' | perl -ne 'print if not /\.cn$/' > ./community/data/geolocation-\!cn
+          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/geolocation-\!cn
           cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-tld-list.txt
           cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/category-ads-all
           cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > reject-tld-list.txt
@@ -142,8 +142,10 @@ jobs:
           cp ./community/data/geolocation-\!cn proxy-list.txt
           cp ./community/data/category-ads-all reject-list.txt
 
-      - name: Create `google-cn`、`apple-cn`、`gfw`、`greatfire` lists
+      - name: Create `china-list`、`google-cn`、`apple-cn`、`gfw`、`greatfire` lists
         run: |
+          curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > ./community/data/china-list
+          curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > china-list.txt
           curl -sSL $GOOGLE_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/google-cn
           curl -sSL $GOOGLE_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > google-cn.txt
           curl -sSL $APPLE_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/apple-cn
@@ -212,7 +214,7 @@ jobs:
           install -Dp ./custom/publish/geosite.db ./publish/geosite.db
           install -p {proxy,direct,reject}-tld-list.txt ./publish/
           install -p {proxy,direct,reject}-list.txt ./publish/
-          install -p {apple-cn,google-cn,microsoft-cn,gfw,greatfire,win-spy,win-update,win-extra}.txt ./publish/
+          install -p {china-list,apple-cn,google-cn,microsoft-cn,gfw,greatfire,win-spy,win-update,win-extra}.txt ./publish/
           cd ./publish || exit 1
           sha256sum geosite.dat > geosite.dat.sha256sum
           sha256sum geosite.db > geosite.db.sha256sum
